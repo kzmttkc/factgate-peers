@@ -5,6 +5,37 @@ guesthouses. Stay Steward loads FactGate and the two stays as partner networks b
 FactGate about a stay before it loads that stay, and books in the stay's own window. See
 "Stay Steward" below.
 
+## Run the tests from a fresh clone
+
+Clone the three repos **side by side** (sibling folders), then run the test suites from each checkout:
+
+```shell
+mkdir -p ~/demo && cd ~/demo
+git clone https://github.com/kzmttkc/factgate
+git clone https://github.com/kzmttkc/factgate-peers
+git clone https://github.com/cognizant-ai-labs/agentic-web
+```
+
+From `factgate-peers` (expects `../factgate/site` and `../agentic-web/skills/agentify-website`):
+
+```shell
+cd factgate-peers
+node --test "*/tests/*.test.mjs" "tests/*.test.mjs"
+```
+
+Expected: **55 tests, 55 pass, 0 fail, 0 skipped** (includes ten three-site end-to-end tests in `tests/three_sites.e2e.test.mjs`).
+
+From `factgate`:
+
+```shell
+cd ../factgate
+node --test "test/*.test.mjs" "site/tests/*.test.mjs"
+```
+
+Expected: **160 tests, 153 pass, 0 fail, 7 skipped** (skipped rows are template tests for irreversible actions; FactGate defines none).
+
+Optional overrides: `FACTGATE_DIR` or `FACTGATE_SITE` for the FactGate `site/` folder; `AGENTIFY_SKILL` for `agentic-web/skills/agentify-website`. If `../factgate` is missing, only `tests/three_sites.e2e.test.mjs` fails, with clone instructions (spec 6-4..6-7).
+
 The two guesthouse sites: Both are static open agentic
 websites (Worldwide Agentic Web MVP spec, §2, §3 and §6): each publishes
 `agent-manifest.json`, a two-agent network and page-local site actions, and runs in the
@@ -36,8 +67,8 @@ On Stay Steward, press **Check with FactGate** (no AI key needed). Verified Stay
 
 ## Run
 
-From this folder, one terminal per site (FactGate itself: `~/factgate/README.md`, on
-`http://localhost:8790`):
+From this folder, one terminal per site (FactGate itself: sibling `../factgate` or
+https://github.com/kzmttkc/factgate, on `http://localhost:8790`):
 
 ```shell
 node serve.mjs glossy-stay --port 8791                  # http://127.0.0.1:8791/
@@ -49,8 +80,9 @@ Stay Steward runs on its own host name (`[::1]`), so a key saved on its page is 
 into a cookie the other sites receive (runtime/byok.js, per host name).
 
 `serve.mjs` runs the reference
-`~/factgate-ref/agentic-web/skills/agentify-website/scripts/serve_site.mjs` unchanged
-(set `SERVE_SITE` to use another copy). serve_site sends
+`../agentic-web/skills/agentify-website/scripts/serve_site.mjs` when present (else
+`~/factgate-ref/...`, or set `SERVE_SITE` / `AGENTIFY_SKILL` to use another copy).
+serve_site sends
 `Access-Control-Allow-Origin: *` only on the agent-site public files. `serve.mjs` adds the
 same header to the four extra files FactGate reads from another origin:
 `pay/quote.json`, `api/book.json`, `.well-known/agent-registration.json` and
@@ -173,7 +205,8 @@ with Stay Steward as the visitor's page, a scripted model behind a fake router
 stub (`tests/support/peer_web.mjs`, adapted from the reference linking tests): site folders
 served from disk, the partners' bridge frames and windows, and a stand-in for the Base Sepolia
 RPC with the demo agents' facts (`tests/support/fake_chain.mjs`). No port, no model, nothing
-leaves the process. It needs `~/factgate/site` (or `FACTGATE_SITE`).
+leaves the process. It needs a FactGate checkout (`../factgate/site`, `FACTGATE_DIR`, or
+`FACTGATE_SITE`).
 
 | Test | Spec section 6 |
 | --- | --- |
@@ -196,7 +229,7 @@ Verified Stay network that calls Stay Steward back.
 ## Checks
 
 ```shell
-R=~/factgate-ref/agentic-web/skills/agentify-website
+R=../agentic-web/skills/agentify-website
 # Build each network and its discovery files from the .hocon
 node $R/scripts/build_network.mjs glossy-stay/glossy_stay.hocon --manifest glossy-stay/agent-manifest.json
 node $R/scripts/build_network.mjs verified-stay/verified_stay.hocon --manifest verified-stay/agent-manifest.json

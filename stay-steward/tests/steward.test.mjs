@@ -4,16 +4,16 @@ import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
+import { resolveAgentifySkill, resolveFactgateSite } from "../../tests/support/paths.mjs";
 import { DEFAULT_POLICY, FactGateGate, policyAllows } from "../js/factgate-gate.mjs";
 import { FACTGATE, GATE_POLICY, STAYS, TripPage } from "../js/trip.mjs";
 
 const DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const SKILL = process.env.AGENTIFY_SKILL || path.join(os.homedir(), "factgate-ref/agentic-web/skills/agentify-website");
+const SKILL = resolveAgentifySkill();
 const json = async (f) => JSON.parse(await readFile(path.join(DIR, f), "utf8"));
 
 test("the three partners are named the same way in links.json, the network's link slots, the manifest's imports and allowed_peers", async () => {
@@ -94,7 +94,7 @@ test("the build passes --check; its only warnings are the expected ones for name
 });
 
 test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async (t) => {
-  const site = process.env.FACTGATE_SITE || path.join(os.homedir(), "factgate", "site");
+  const site = resolveFactgateSite();
   if (!existsSync(path.join(site, "factgate-gate.mjs"))) return t.skip(`set FACTGATE_SITE to a factgate checkout's site folder (not found at ${site})`);
   const ours = await readFile(path.join(DIR, "js/factgate-gate.mjs"), "utf8");
   const theirs = await readFile(path.join(site, "factgate-gate.mjs"), "utf8");

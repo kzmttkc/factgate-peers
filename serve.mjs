@@ -12,9 +12,9 @@
 // adds the same header to exactly those paths and leaves everything else to serve_site.mjs.
 // Set SERVE_SITE to use another copy of serve_site.mjs.
 import http from "node:http";
-import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { resolveServeSiteScript } from "./tests/support/paths.mjs";
 
 const EXTRA_PUBLIC = [
   "/pay/quote.json",
@@ -23,8 +23,7 @@ const EXTRA_PUBLIC = [
   "/.well-known/agentfacts.json",
 ];
 
-const SERVE_SITE = process.env.SERVE_SITE
-  || path.join(os.homedir(), "factgate-ref/agentic-web/skills/agentify-website/scripts/serve_site.mjs");
+const SERVE_SITE = resolveServeSiteScript();
 
 const createServer = http.createServer;
 http.createServer = function createServerWithExtraCors(handler) {

@@ -18,11 +18,12 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { fakeOutside } from "./support/fake_chain.mjs";
+import { PEERS_ROOT, factgateSiteForE2E } from "./support/paths.mjs";
 import { PeerWeb } from "./support/peer_web.mjs";
 import { ScriptRouter } from "./support/script_router.mjs";
 
-const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const FACTGATE_SITE = process.env.FACTGATE_SITE || path.join(ROOT, "..", "factgate", "site");
+const ROOT = PEERS_ROOT;
+const { site: FACTGATE_SITE, error: FACTGATE_E2E_ERROR } = factgateSiteForE2E();
 const STEWARD_DIR = path.join(ROOT, "stay-steward");
 
 const ORIGINS = {
@@ -58,7 +59,10 @@ const { Engine } = await import(pathToFileURL(path.join(STEWARD_DIR, "runtime/en
 const { FactGateGate } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/factgate-gate.mjs")).href);
 const { checkAndBook } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/check-button.mjs")).href);
 const { FACTGATE, GATE_POLICY, STAYS, Trip } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/trip.mjs")).href);
-const { BridgeActions } = await import(pathToFileURL(path.join(FACTGATE_SITE, "bridge/bridge-actions.js")).href);
+let BridgeActions;
+if (!FACTGATE_E2E_ERROR) {
+  ({ BridgeActions } = await import(pathToFileURL(path.join(FACTGATE_SITE, "bridge/bridge-actions.js")).href));
+}
 const { BookingWindow } = await import(pathToFileURL(path.join(ROOT, "verified-stay/bridge/booking-window.js")).href);
 
 const parse = ScriptRouter.parse;
@@ -211,6 +215,12 @@ class E2E {
     }
   }
 }
+
+if (FACTGATE_E2E_ERROR) {
+  test("factgate checkout (sibling ../factgate or FACTGATE_DIR) is required for spec 6-4..6-7", () => {
+    assert.fail(FACTGATE_E2E_ERROR);
+  });
+} else {
 
 test("6-4 ALLOW: Stay Steward asks FactGate, then loads Verified Stay by name after its card, and books in Verified Stay's window", async () => {
   const out = await E2E.run({ stay: "verified_stay" });
@@ -415,3 +425,5 @@ test("button, no key: Glossy Stay is BLOCKed by FactGate; the gate stops, says w
   assert.match(stop.text, /Glossy Stay is not loaded/);
   assert.deepEqual(out.web.windows.map((w) => new URL(w.src).origin), [ORIGINS.factgate]);
 });
+
+}
