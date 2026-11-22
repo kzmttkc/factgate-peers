@@ -2,6 +2,7 @@
 // manifest; only target_url may leave as private context; the gate's decisions; the build.
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -83,7 +84,8 @@ test("the gate turns runtime stops into lines the page shows", () => {
   assert.equal(gate.stopFrom({ kind: "tool", phase: "end", resultPreview: "{\"ok\":true}" }), null);
 });
 
-test("the build passes --check; its only warnings are the expected ones for named links", async () => {
+test("the build passes --check; its only warnings are the expected ones for named links", async (t) => {
+  if (!existsSync(path.join(SKILL, "scripts/build_network.mjs"))) return t.skip(`set AGENTIFY_SKILL to the agentic-web skills/agentify-website folder (not found at ${SKILL})`);
   const run = promisify(execFile);
   const { stdout, stderr } = await run(process.execPath, [path.join(SKILL, "scripts/build_network.mjs"), path.join(DIR, "stay_steward.hocon"), "--manifest", path.join(DIR, "agent-manifest.json"), "--check"]);
   const warnings = `${stdout}\n${stderr}`.split("\n").filter((l) => l.startsWith("WARNING"));
@@ -91,8 +93,9 @@ test("the build passes --check; its only warnings are the expected ones for name
   assert.ok(warnings.every((w) => /link_slots|linking\.imports|allowed_peers lists http/.test(w)), warnings.join("\n"));
 });
 
-test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async () => {
+test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async (t) => {
   const site = process.env.FACTGATE_SITE || path.join(os.homedir(), "factgate", "site");
+  if (!existsSync(path.join(site, "factgate-gate.mjs"))) return t.skip(`set FACTGATE_SITE to a factgate checkout's site folder (not found at ${site})`);
   const ours = await readFile(path.join(DIR, "js/factgate-gate.mjs"), "utf8");
   const theirs = await readFile(path.join(site, "factgate-gate.mjs"), "utf8");
   assert.equal(ours, theirs, "stay-steward/js/factgate-gate.mjs differs from FactGate's site/factgate-gate.mjs");
