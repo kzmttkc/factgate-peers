@@ -232,7 +232,7 @@ test("6-4 ALLOW: Stay Steward asks FactGate, then loads Verified Stay by name af
     assert.deepEqual(out.web.requests.slice(0, card.sentBefore).filter((r) => r.origin === origin && r.from === "runtime"), [], `${origin} was contacted before its card`);
   }
   // FactGate's window asked before it contacted the stay, then before the chain RPC.
-  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792", "api.nandaindex.org"], ["sepolia.base.org", "base-sepolia-rpc.publicnode.com"]]);
+  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792", "api.nandaindex.org"], ["sepolia.base.org"]]);
   assert.deepEqual(out.web.requests.slice(0, out.factgateCards[0].sentBefore).filter((r) => r.origin === ORIGINS.verified), []);
   assert.deepEqual(out.web.requests.slice(0, out.factgateCards[1].sentBefore).filter((r) => r.origin === "https://sepolia.base.org"), []);
   // The exact named network was loaded from the stay's origin and run here.
@@ -396,7 +396,7 @@ test("button, no key: Verified Stay is checked by FactGate (ALLOW), loaded by na
     const origin = `http://${card.peerOrigin}`;
     assert.deepEqual(out.web.requests.slice(0, card.sentBefore).filter((r) => r.origin === origin && r.from === "runtime"), [], `${origin} was contacted before its card`);
   }
-  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792", "api.nandaindex.org"], ["sepolia.base.org", "base-sepolia-rpc.publicnode.com"]]);
+  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792", "api.nandaindex.org"], ["sepolia.base.org"]]);
   assert.deepEqual(E2E.events(out.trace, "remote_fetch", "end").map((e) => [e.peerOrigin, e.network, e.status]), [["localhost:8790", "factgate", "ok"], ["127.0.0.1:8792", "verified_stay", "ok"]]);
   assert.deepEqual(out.web.windows.map((w) => [new URL(w.src).origin, w.executed]), [[ORIGINS.factgate, ["gate_check"]], [ORIGINS.verified, ["book_stay"]]]);
   assert.match(out.windowVisits[0].lines[0], /night\(s\)/);
