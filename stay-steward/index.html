@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stay Steward</title>
+    <link rel="icon" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assistant.css">
+    <script type="module" src="js/page.mjs"></script>
+    <script type="module" src="site.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Stay Steward</h1>
+      <p>Books stays for you through each stay's own assistant, and asks FactGate first.</p>
+      <p class="demo-note">A fictional booking agent for an agent-safety demo. Nothing here is real, and no money moves.</p>
+    </header>
+    <main>
+      <section aria-labelledby="trip-heading">
+        <h2 id="trip-heading">Your trip</h2>
+        <form id="trip-form">
+          <label for="trip-in">Check-in</label>
+          <input id="trip-in" type="date">
+          <label for="trip-out">Check-out</label>
+          <input id="trip-out" type="date">
+          <label for="trip-name">Guest name</label>
+          <input id="trip-name" type="text" maxlength="80" autocomplete="name">
+          <label for="trip-stay">Stay to book</label>
+          <select id="trip-stay"></select>
+        </form>
+        <p id="trip-out-status" role="status"></p>
+        <p class="note">These details are private context. They stay on this page: the assistant's partners receive only the chosen stay's address (<code>target_url</code>), and only FactGate needs it. The stay's own window asks for the guest name when it books.</p>
+      </section>
+      <section aria-labelledby="gate-heading">
+        <h2 id="gate-heading">The gate before linking</h2>
+        <p>Before the assistant loads a stay's agent network, FactGate checks the stay. A stay FactGate blocks, or has not checked, is never loaded. Every stop shows here.</p>
+        <p id="gate-empty" class="note">Nothing yet. Ask the assistant to book your trip.</p>
+        <ol id="gate-log"></ol>
+      </section>
+      <section id="assistant" class="assistant" aria-labelledby="assistant-heading">
+        <h2 id="assistant-heading">Ask Stay Steward</h2>
+        <p>The assistant checks the stay with FactGate, then asks the stay's own assistant to book it. Each site it contacts asks you first.</p>
+        <p class="assistant-note">Your messages and this page's data go to the LLM provider you choose in the settings below.</p>
+        <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load. You can still use the page directly.</p>
+        <div id="agent-app">
+          <div data-ns-slot="header"></div>
+          <div class="assistant-panels">
+            <div data-ns-slot="chat"></div>
+            <div data-ns-slot="agents"></div>
+          </div>
+          <div data-ns-slot="settings"></div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p class="demo-note">Demo site run by the author. It names FactGate and the two demo stays in <a href="links.json">links.json</a>.</p>
+      <p>For agents: <a href="agent-manifest.json">agent-manifest.json</a> · <a href="stay_steward.network.json">network</a></p>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "stay_steward",
+      "front_man": "stay_steward_desk",
+      "aliases": [
+        "stay_steward",
+        "stay_steward_desk"
+      ],
+      "url": "stay_steward"
+    }
+  ],
+  "imports": [
+    {
+      "network": "stay_steward",
+      "reference": "factgate",
+      "callers": [
+        "stay_steward_desk"
+      ],
+      "status": "bound",
+      "url": "http://localhost:8790/factgate"
+    },
+    {
+      "network": "stay_steward",
+      "reference": "verified_stay",
+      "callers": [
+        "stay_steward_desk"
+      ],
+      "status": "bound",
+      "url": "http://127.0.0.1:8792/verified_stay"
+    },
+    {
+      "network": "stay_steward",
+      "reference": "glossy_stay",
+      "callers": [
+        "stay_steward_desk"
+      ],
+      "status": "bound",
+      "url": "http://127.0.0.1:8791/glossy_stay"
+    }
+  ],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

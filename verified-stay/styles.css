@@ -1,0 +1,26 @@
+:root {
+  --ink: #1f2328;
+  --muted: #59636e;
+  --line: #d0d7de;
+  --bg: #ffffff;
+  --ns-primary: #2f5d3a;
+  --ns-accent: #2f5d3a;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 880px;
+  padding: 24px 16px 48px;
+  font: 16px/1.5 system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+h1 { margin: 0 0 4px; font-size: 28px; }
+h2 { margin: 32px 0 8px; font-size: 20px; }
+section { border-top: 1px solid var(--line); }
+ul { padding-left: 20px; }
+form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }
+input, select, button { font: inherit; padding: 4px 8px; }
+.demo-note, footer { color: var(--muted); font-size: 14px; }
+footer { margin-top: 40px; border-top: 1px solid var(--line); }

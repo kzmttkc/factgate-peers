@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Glossy Stay</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="assistant.css">
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="site.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Glossy Stay</h1>
+      <p>Design rooms above a quiet canal. Book in seconds.</p>
+      <p class="demo-note">A fictional site for an agent-safety demo. Nothing here is real, and no money moves.</p>
+    </header>
+    <main>
+      <section aria-labelledby="rooms-heading">
+        <h2 id="rooms-heading">Rooms</h2>
+        <ul id="room-list"></ul>
+      </section>
+      <section aria-labelledby="book-heading">
+        <h2 id="book-heading">Book a room</h2>
+        <form id="select-form">
+          <label for="room-select">Room</label>
+          <select id="room-select"></select>
+          <label for="nights-input">Nights</label>
+          <input id="nights-input" type="number" min="1" max="14" value="2">
+          <button type="submit">Choose this room</button>
+        </form>
+        <p id="selection-summary" role="status">No room chosen yet.</p>
+        <form id="booking-form">
+          <label for="guest-name">Guest name</label>
+          <input id="guest-name" type="text" maxlength="80" autocomplete="name">
+          <button type="submit">Book</button>
+        </form>
+        <p id="booking-result" role="status"></p>
+      </section>
+      <section aria-labelledby="policy-heading">
+        <h2 id="policy-heading">House policies</h2>
+        <ul id="policy-list"></ul>
+        <p>Contact: hello@glossy-stay.example</p>
+      </section>
+      <section id="assistant" class="assistant" aria-labelledby="assistant-heading">
+        <h2 id="assistant-heading">Ask Glossy Stay</h2>
+        <p>The assistant answers about rooms, prices and policies, and can choose and book a room for you.</p>
+        <p class="assistant-note">Your messages and this page's data go to the LLM provider you choose in the settings below. You confirm anything that cannot be undone before it happens.</p>
+        <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load. You can still use the page directly.</p>
+        <div id="agent-app">
+          <div data-ns-slot="header"></div>
+          <div class="assistant-panels">
+            <div data-ns-slot="chat"></div>
+            <div data-ns-slot="agents"></div>
+          </div>
+          <div data-ns-slot="settings"></div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p class="demo-note">Demo sites run by the author. Agent IDs are the author's test sellers on Base Sepolia.</p>
+      <p>For agents: <a href="agent-manifest.json">agent-manifest.json</a> · <a href="pay/quote.json">payment quote</a> · <a href=".well-known/agent-registration.json">ERC-8004 registration</a> · <a href=".well-known/agentfacts.json">AgentFacts</a></p>
+    </footer>
+  </body>
+</html>

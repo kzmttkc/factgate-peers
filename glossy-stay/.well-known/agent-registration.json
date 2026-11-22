@@ -1,0 +1,33 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Glossy Stay Assistant",
+  "description": "Booking assistant for Glossy Stay, a fictional guesthouse. Demo run by the author: points to the author's test seller agent 10799 on Base Sepolia (official ERC-8004 IdentityRegistry).",
+  "image": "http://127.0.0.1:8791/favicon.svg",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "http://127.0.0.1:8791/"
+    },
+    {
+      "name": "MCP",
+      "endpoint": "https://mcp.glossy-stay.invalid/mcp",
+      "version": "2025-06-18"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:84532:0x1111111111111111111111111111111111111111"
+    }
+  ],
+  "agentWallet": "0x1111111111111111111111111111111111111111",
+  "x402Support": true,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 10799,
+      "agentRegistry": "eip155:84532:0x8004A818BFB912233c491871b3d84c89A494BD9e"
+    }
+  ],
+  "supportedTrust": [
+    "reputation"
+  ]
+}

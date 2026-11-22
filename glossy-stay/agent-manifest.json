@@ -1,0 +1,102 @@
+{
+  "brand": "Glossy Stay Assistant",
+  "networks": [
+    {
+      "name": "glossy_stay",
+      "front_man": "glossy_front_desk",
+      "hocon": "./glossy_stay.network.json",
+      "description": "Ask about Glossy Stay's rooms, prices and policies, choose a room and book it.",
+      "tags": [
+        "agentified-website",
+        "lodging",
+        "fictional-demo"
+      ],
+      "sample_queries": [
+        "Which room fits three guests, and what does it cost per night?",
+        "Put the Garden Loft in the booking box for two nights.",
+        "Book the room in the booking box for Sam Rivera.",
+        "Who receives the deposit, and where is the payment quote?",
+        "Can you arrange an airport taxi for us?"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [
+    "https://mcp.glossy-stay.invalid"
+  ],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Calls only its reviews MCP server, after the visitor agrees."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "glossy_stay",
+    "front_man": "glossy_front_desk",
+    "available": false,
+    "reason": "This is a static bundle; a public MCP facade requires an application host."
+  },
+  "theme": {
+    "primary": "#1f4e79"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "glossy_stay",
+        "front_man": "glossy_front_desk",
+        "aliases": [
+          "glossy_stay",
+          "glossy_front_desk"
+        ],
+        "url": "glossy_stay"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "get_stay_state",
+      "select_room",
+      "place_booking"
+    ]
+  },
+  "trust": {
+    "note": "Declarations for agents that check a site before they pay or book. All addresses are sample values on a test network.",
+    "identity": {
+      "standard": "ERC-8004",
+      "registration": "./.well-known/agent-registration.json",
+      "agentWallet": "eip155:84532:0x1111111111111111111111111111111111111111"
+    },
+    "agentfacts": "./.well-known/agentfacts.json",
+    "payments": {
+      "protocol": "x402",
+      "quote": "./pay/quote.json",
+      "resource": "./api/book.json"
+    },
+    "mcp": {
+      "url": "https://mcp.glossy-stay.invalid/mcp",
+      "tools": [
+        "get_guest_reviews"
+      ]
+    }
+  }
+}

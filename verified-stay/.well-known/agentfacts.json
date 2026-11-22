@@ -1,0 +1,44 @@
+{
+  "note": "Self-asserted facts, signed by the site's own key. A signature by the publisher proves who wrote the claims, not that they are true. Fictional demo; the signature is a placeholder, not a real one.",
+  "id": "did:web:verified-stay.example",
+  "agent_name": "verified_stay",
+  "label": "Verified Stay Assistant",
+  "description": "Books plain rooms at Verified Stay.",
+  "version": "1.0.0",
+  "provider": {
+    "name": "Verified Stay (fictional)",
+    "url": "https://verified-stay.example"
+  },
+  "endpoints": {
+    "static": [
+      "http://127.0.0.1:8792/verified_stay"
+    ]
+  },
+  "capabilities": {
+    "actions": [
+      "get_stay_state",
+      "select_room",
+      "place_booking"
+    ],
+    "payments": {
+      "protocol": "x402",
+      "quote": "http://127.0.0.1:8792/pay/quote.json",
+      "payee": "0xf98f6b4d8f1a5a03271bbf2bee23236737d9ec31"
+    }
+  },
+  "certification": {
+    "level": "self-verified",
+    "issuer": "did:web:verified-stay.example",
+    "claims": [
+      "Bookings return a confirmation code",
+      "Payee matches the ERC-8004 agentWallet"
+    ]
+  },
+  "proof": {
+    "type": "EcdsaSecp256k1Signature2019",
+    "created": "2026-11-22T00:00:00Z",
+    "verificationMethod": "did:web:verified-stay.example#key-1",
+    "signer": "0xf98f6b4d8f1a5a03271bbf2bee23236737d9ec31",
+    "signatureValue": "0xdemo-placeholder-signature-not-real"
+  }
+}

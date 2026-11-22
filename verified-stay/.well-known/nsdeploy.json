@@ -1,0 +1,18 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "verified_stay",
+      "front_man": "verified_front_desk",
+      "aliases": [
+        "verified_stay",
+        "verified_front_desk"
+      ],
+      "url": "verified_stay"
+    }
+  ],
+  "imports": [],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

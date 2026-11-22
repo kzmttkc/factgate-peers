@@ -1,0 +1,8 @@
+{
+  "status": "confirmed",
+  "provider": "verified_stay",
+  "note": "Static demo receipt. The page adds the booking code, room, nights, total and guest name. Fictional demo: no room is held and nothing is charged.",
+  "payee": "0xf98f6b4d8f1a5a03271bbf2bee23236737d9ec31",
+  "checkIn": "2 pm",
+  "checkOut": "10 am"
+}

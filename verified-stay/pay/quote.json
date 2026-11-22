@@ -1,0 +1,24 @@
+{
+  "simulatedHttpStatus": 402,
+  "note": "Static stand-in for an HTTP 402 Payment Required answer from GET /api/book.json. A static host cannot send 402, so the status is declared here. Fictional demo: nothing can be paid.",
+  "x402Version": 1,
+  "error": "X-PAYMENT header is required",
+  "accepts": [
+    {
+      "scheme": "exact",
+      "network": "base-sepolia",
+      "maxAmountRequired": "150000000",
+      "resource": "http://127.0.0.1:8792/api/book.json",
+      "description": "One-night deposit for a Verified Stay booking",
+      "mimeType": "application/json",
+      "payTo": "0xf98f6b4d8f1a5a03271bbf2bee23236737d9ec31",
+      "maxTimeoutSeconds": 300,
+      "asset": "0x4444444444444444444444444444444444444444",
+      "extra": {
+        "name": "DEMO-USD",
+        "version": "1",
+        "decimals": 6
+      }
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "brand": "Verified Stay Assistant",
+  "networks": [
+    {
+      "name": "verified_stay",
+      "front_man": "verified_front_desk",
+      "hocon": "./verified_stay.network.json",
+      "description": "Ask about Verified Stay's rooms, prices and policies, choose a room and book it.",
+      "tags": [
+        "agentified-website",
+        "lodging",
+        "fictional-demo"
+      ],
+      "sample_queries": [
+        "Which room fits four guests, and what does it cost per night?",
+        "Put the Family Room in the booking box for two nights.",
+        "Book the room in the booking box for Sam Rivera.",
+        "Who receives the deposit, and where is the payment quote?",
+        "Can you arrange an airport taxi for us?"
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Local agents and page-local actions only. Partner sites listed in bridge/bridge-actions.js may read rooms and prices and open a booking window on this site, where the visitor types the guest name."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "verified_stay",
+    "front_man": "verified_front_desk",
+    "available": false,
+    "reason": "This is a static bundle; a public MCP facade requires an application host."
+  },
+  "theme": {
+    "primary": "#2f5d3a"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "verified_stay",
+        "front_man": "verified_front_desk",
+        "aliases": [
+          "verified_stay",
+          "verified_front_desk"
+        ],
+        "url": "verified_stay"
+      }
+    ],
+    "imports": [],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "get_stay_state",
+      "select_room",
+      "place_booking",
+      "book_stay"
+    ]
+  },
+  "trust": {
+    "note": "Declarations for agents that check a site before they pay or book. All addresses are sample values on a test network.",
+    "identity": {
+      "standard": "ERC-8004",
+      "registration": "./.well-known/agent-registration.json",
+      "agentWallet": "eip155:84532:0xf98f6b4d8f1a5a03271bbf2bee23236737d9ec31"
+    },
+    "agentfacts": "./.well-known/agentfacts.json",
+    "payments": {
+      "protocol": "x402",
+      "quote": "./pay/quote.json",
+      "resource": "./api/book.json"
+    }
+  }
+}

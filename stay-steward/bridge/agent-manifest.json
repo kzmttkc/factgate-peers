@@ -1,0 +1,10 @@
+{
+  "networks": [
+    {
+      "name": "stay_steward"
+    }
+  ],
+  "actions": {
+    "version": 1
+  }
+}

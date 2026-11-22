@@ -1,0 +1,18 @@
+{
+  "protocol": "nsdeploy-link/v1",
+  "exports": [
+    {
+      "network": "glossy_stay",
+      "front_man": "glossy_front_desk",
+      "aliases": [
+        "glossy_stay",
+        "glossy_front_desk"
+      ],
+      "url": "glossy_stay"
+    }
+  ],
+  "imports": [],
+  "link_updates": {
+    "mode": "browser-local"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "networks": [
+    {
+      "name": "glossy_stay"
+    }
+  ],
+  "actions": {
+    "version": 1
+  }
+}

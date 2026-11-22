@@ -1,0 +1,103 @@
+{
+  "brand": "Stay Steward",
+  "networks": [
+    {
+      "name": "stay_steward",
+      "front_man": "stay_steward_desk",
+      "hocon": "./stay_steward.network.json",
+      "description": "Book a stay through its own agent, after FactGate checks it.",
+      "tags": [
+        "agentified-website",
+        "booking-agent",
+        "fictional-demo"
+      ],
+      "sample_queries": [
+        "Book my trip at the stay I picked.",
+        "Is Glossy Stay safe to book through its assistant?",
+        "Which stays can you book for me?",
+        "Pay the deposit for me now."
+      ]
+    }
+  ],
+  "llm_router": {
+    "base_url": "https://api.otari.ai/api/v1",
+    "mock": false,
+    "byok_router": "https://api.otari.ai/api/v1"
+  },
+  "allowed_peers": [
+    "http://localhost:8790",
+    "http://127.0.0.1:8792",
+    "http://127.0.0.1:8791"
+  ],
+  "peer_policy": {
+    "mode": "closed",
+    "deny_origins": [],
+    "note": "Stay Steward loads three partner networks by name (links.json): FactGate, Verified Stay and Glossy Stay, each after the visitor agrees on a card. It loads a stay only after FactGate checked it in this visit and did not answer BLOCK (js/gate-keeper.mjs). Partners get only the target_url private-context field."
+  },
+  "agent_mcp": {
+    "protocol": "nsdeploy-agent-mcp/v1",
+    "network": "stay_steward",
+    "front_man": "stay_steward_desk",
+    "available": false,
+    "reason": "This is a static bundle; a public MCP facade requires an application host."
+  },
+  "theme": {
+    "primary": "#3d3a8c"
+  },
+  "linking": {
+    "protocol": "nsdeploy-link/v1",
+    "exports": [
+      {
+        "network": "stay_steward",
+        "front_man": "stay_steward_desk",
+        "aliases": [
+          "stay_steward",
+          "stay_steward_desk"
+        ],
+        "url": "stay_steward"
+      }
+    ],
+    "imports": [
+      {
+        "network": "stay_steward",
+        "reference": "factgate",
+        "callers": ["stay_steward_desk"],
+        "status": "bound",
+        "url": "http://localhost:8790/factgate"
+      },
+      {
+        "network": "stay_steward",
+        "reference": "verified_stay",
+        "callers": ["stay_steward_desk"],
+        "status": "bound",
+        "url": "http://127.0.0.1:8792/verified_stay"
+      },
+      {
+        "network": "stay_steward",
+        "reference": "glossy_stay",
+        "callers": ["stay_steward_desk"],
+        "status": "bound",
+        "url": "http://127.0.0.1:8791/glossy_stay"
+      }
+    ],
+    "link_updates": {
+      "mode": "browser-local"
+    }
+  },
+  "deployment": {
+    "mode": "static",
+    "self_contained_runtime": true,
+    "browser_mock": false,
+    "direct_byok": true,
+    "direct_mcp_requires_cors": true,
+    "public_mcp_facade": false
+  },
+  "actions": {
+    "version": 1,
+    "module": "./site-actions.js",
+    "bridge": "./bridge/action-bridge.html",
+    "agentTools": [
+      "get_trip"
+    ]
+  }
+}
