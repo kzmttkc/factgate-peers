@@ -1,0 +1,7 @@
+FactGate
+Copyright (c) 2026 kzmttkc. Licensed under the MIT License (LICENSE).
+
+Exception: the reference runtime copied from the agentify-website skill
+(cognizant-ai-labs/agentic-web), in each site's runtime/ folder, is not covered
+by the MIT license above. It stays under the Apache License 2.0; see
+runtime/LICENSE.txt in that folder.
