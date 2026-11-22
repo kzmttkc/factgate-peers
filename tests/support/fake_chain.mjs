@@ -92,6 +92,10 @@ export async function fakeOutside(factgateSite) {
     return { error: { code: -32000, message: `unexpected call to ${to}` } };
   };
   return async (url, init = {}) => {
+    // The NANDA Index list (FactGate looks the counterparty up there): the demo stays are not in it.
+    if (url.origin === "https://api.nandaindex.org" && url.pathname === "/api/v1/index") {
+      return new Response("[]", { status: 200, headers: { "content-type": "application/json" } });
+    }
     if (url.origin === "https://sepolia.base.org" && String(init.method || "GET").toUpperCase() === "POST") {
       const body = JSON.parse(init.body);
       const out = Array.isArray(body) ? body.map((b) => ({ jsonrpc: "2.0", id: b.id, ...answer(b) })) : { jsonrpc: "2.0", id: body.id ?? 1, ...answer(body) };

@@ -55,8 +55,9 @@ registerHooks({
 });
 
 const { Engine } = await import(pathToFileURL(path.join(STEWARD_DIR, "runtime/engine.js")).href);
-const { GateKeeper } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/gate-keeper.mjs")).href);
-const { FACTGATE, STAYS, Trip } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/trip.mjs")).href);
+const { FactGateGate } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/factgate-gate.mjs")).href);
+const { checkAndBook } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/check-button.mjs")).href);
+const { FACTGATE, GATE_POLICY, STAYS, Trip } = await import(pathToFileURL(path.join(STEWARD_DIR, "js/trip.mjs")).href);
 const { BridgeActions } = await import(pathToFileURL(path.join(FACTGATE_SITE, "bridge/bridge-actions.js")).href);
 const { BookingWindow } = await import(pathToFileURL(path.join(ROOT, "verified-stay/bridge/booking-window.js")).href);
 
@@ -94,7 +95,8 @@ class E2E {
   /**
    * Set up the web, the router and the hooks for one run.
    *
-   * :param options: { stay, scripts, cardAnswer(info), factgateAnswer(request), replace(web) }
+   * :param options: { stay, scripts, cardAnswer(info), factgateAnswer(request), replace(web), policy, button }
+   *   button: run the page's "Check with FactGate" button (no model, no key) instead of a chat turn.
    */
   static async run(options) {
     const scripts = { steward: STEWARD_SCRIPT, factgate: FACTGATE_SCRIPT, verified: VERIFIED_SCRIPT, ...(options.scripts || {}) };
@@ -138,19 +140,23 @@ class E2E {
     };
     web.install();
     try {
-      const engine = new Engine({ originUrl: ORIGINS.steward, byokKey: KEY, routerOverride: ROUTER });
+      const engine = options.button ? new Engine({ originUrl: ORIGINS.steward }) : new Engine({ originUrl: ORIGINS.steward, byokKey: KEY, routerOverride: ROUTER });
       out.trace = engine.trace.events;
       const labels = { [new URL(FACTGATE.url).host]: FACTGATE.label, "[::1]:8793": "Stay Steward" };
       for (const s of STAYS) {
         labels[new URL(s.url).host] = s.label;
       }
-      new GateKeeper({ factgateUrl: FACTGATE.url, pageOrigin: ORIGINS.steward, labels, record: (e) => out.log.push(e) }).install(engine);
+      const gate = new FactGateGate({ factgateUrl: FACTGATE.url, pageOrigin: ORIGINS.steward, labels, policy: options.policy || GATE_POLICY, record: (e) => out.log.push(e) }).install(engine);
       engine.onConsent = async (info) => {
         out.cards.push({ kind: info.kind, peerLabel: info.peerLabel, peerOrigin: info.peerOrigin, requestText: info.requestText, sentBefore: web.requests.length });
         return options.cardAnswer ? options.cardAnswer(info) : "allow";
       };
-      // site.js hands the page's private context to every turn in the same way.
-      out.result = await engine.runTurn("Book my trip at the stay I picked.", { slyData: Trip.page.privateContext() });
+      if (options.button) {
+        out.button = await checkAndBook({ engine, gate, stay: Trip.page.stay(), nights: Trip.page.nights(), record: (e) => out.log.push(e) });
+      } else {
+        // site.js hands the page's private context to every turn in the same way.
+        out.result = await engine.runTurn("Book my trip at the stay I picked.", { slyData: Trip.page.privateContext() });
+      }
     } finally {
       web.restore();
       BridgeActions.consent = realConsent;
@@ -216,7 +222,7 @@ test("6-4 ALLOW: Stay Steward asks FactGate, then loads Verified Stay by name af
     assert.deepEqual(out.web.requests.slice(0, card.sentBefore).filter((r) => r.origin === origin && r.from === "runtime"), [], `${origin} was contacted before its card`);
   }
   // FactGate's window asked before it contacted the stay, then before the chain RPC.
-  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792"], ["sepolia.base.org"]]);
+  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792", "api.nandaindex.org"], ["sepolia.base.org"]]);
   assert.deepEqual(out.web.requests.slice(0, out.factgateCards[0].sentBefore).filter((r) => r.origin === ORIGINS.verified), []);
   assert.deepEqual(out.web.requests.slice(0, out.factgateCards[1].sentBefore).filter((r) => r.origin === "https://sepolia.base.org"), []);
   // The exact named network was loaded from the stay's origin and run here.
@@ -277,6 +283,11 @@ test("6-7 denied origin (policy): a stay outside allowed_peers is refused after 
   const out = await E2E.run({
     stay: "verified_stay",
     scripts: { steward },
+    // The rogue stay does not answer, so FactGate says CAUTION (unreachable, identity_unknown,
+    // no_delivery_record), which Stay Steward's own policy stops at the gate. This run uses a
+    // looser site policy that accepts those kinds, to show the runtime's allowed_peers check
+    // still refuses the origin behind the gate (the gate-only stop is the next test).
+    policy: { passCaution: ["unreachable", "identity_unknown", "no_delivery_record"] },
     // A served copy of the steward's network that names one more stay by URL, outside its
     // allowed_peers (as the reference linking test L7 serves a changed manifest).
     replace: async (web) => {
@@ -335,4 +346,72 @@ test("6-7 cycle: a stay whose network calls Stay Steward back is stopped, visibl
   assert.match(out.result.text, /VERIFIED: Skipped stay_steward: that network is already in this request's call chain/);
   assert.ok(out.log.some((l) => l.stop === "cycle"), JSON.stringify(out.log));
   assert.equal(E2E.events(out.trace, "remote_call", "start").filter((e) => e.peerOrigin === "[::1]:8793").length, 0);
+});
+
+test("gate policy: Stay Steward's own policy stops a stay FactGate could not reach (CAUTION: unreachable) before its card", async () => {
+  const ROGUE = "http://127.0.0.1:8799/rogue_stay";
+  const steward = [
+    STEWARD_SCRIPT[0],
+    { tool: "factgate", args: { request: `Check ${ROGUE} before I link to it.` } },
+    { tool: "rogue_stay", args: { request: "Book a room for 2 nights for 1 guest." } },
+    (r) => ({ text: `STEWARD_FINAL: ${text(r.toolResults[2])}` }),
+  ];
+  const out = await E2E.run({
+    stay: "verified_stay",
+    scripts: { steward },
+    replace: async (web) => {
+      const network = JSON.parse(await readFile(path.join(STEWARD_DIR, "stay_steward.network.json"), "utf8"));
+      network.tools[0].tools.push(ROGUE);
+      network.link_labels = { [ROGUE]: "Rogue Stay" };
+      web.replace(`${ORIGINS.steward}/stay_steward.network.json`, network, "runtime");
+    },
+  });
+  assert.match(out.result.text, /The user declined to contact 127\.0\.0\.1:8799/);
+  const stop = out.log.find((l) => l.stop === "gate");
+  assert.match(stop.text, /CAUTION for 127\.0\.0\.1:8799 \(127\.0\.0\.1:8799\) \(unreachable.*\), which this site's policy does not accept/);
+  assert.deepEqual(out.cards.map((c) => c.peerOrigin), ["localhost:8790"], "the rogue stay's card was shown");
+  assert.deepEqual(out.web.requests.filter((r) => r.origin === "http://127.0.0.1:8799" && r.from === "runtime"), []);
+});
+
+// The page's "Check with FactGate" button: the same gate, run by page code with no model and no
+// key (stay-steward/js/check-button.mjs). No model call is made at all.
+test("button, no key: Verified Stay is checked by FactGate (ALLOW), loaded by name after its card, and its booking window opens", async () => {
+  const out = await E2E.run({ stay: "verified_stay", button: true });
+  assert.equal(out.button.ok, true, JSON.stringify(out.button));
+  assert.equal(out.button.verdict, "ALLOW");
+  assert.equal(out.button.booking.reference, "VS-0001");
+  assert.deepEqual(out.router.chats(), [], "a model was called");
+  assert.deepEqual(out.cards.map((c) => [c.peerOrigin, c.peerLabel]), [["localhost:8790", "FactGate"], ["127.0.0.1:8792", "Verified Stay (FactGate: ALLOW)"]]);
+  for (const card of out.cards) {
+    const origin = `http://${card.peerOrigin}`;
+    assert.deepEqual(out.web.requests.slice(0, card.sentBefore).filter((r) => r.origin === origin && r.from === "runtime"), [], `${origin} was contacted before its card`);
+  }
+  assert.deepEqual(out.factgateCards.map((c) => c.hosts), [["127.0.0.1:8792", "api.nandaindex.org"], ["sepolia.base.org"]]);
+  assert.deepEqual(E2E.events(out.trace, "remote_fetch", "end").map((e) => [e.peerOrigin, e.network, e.status]), [["localhost:8790", "factgate", "ok"], ["127.0.0.1:8792", "verified_stay", "ok"]]);
+  assert.deepEqual(out.web.windows.map((w) => [new URL(w.src).origin, w.executed]), [[ORIGINS.factgate, ["gate_check"]], [ORIGINS.verified, ["book_stay"]]]);
+  assert.match(out.windowVisits[0].lines[0], /night\(s\)/);
+  assert.ok(out.log.some((l) => l.kind === "context" && /target_url = http:\/\/127\.0\.0\.1:8792\/verified_stay\. Nothing else/.test(l.text)), JSON.stringify(out.log));
+  assert.ok(out.log.some((l) => l.kind === "done" && /VS-0001/.test(l.text)));
+  for (const r of out.web.requests) {
+    for (const p of PRIVATE.slice(1)) {
+      assert.ok(!r.url.includes(p) && !r.body.includes(p), `${r.url} carried ${p}`);
+    }
+    assert.equal(r.authorization, false);
+  }
+});
+
+test("button, no key: Glossy Stay is BLOCKed by FactGate; the gate stops, says why, and never loads Glossy Stay", async () => {
+  const out = await E2E.run({ stay: "glossy_stay", button: true });
+  assert.equal(out.button.ok, false);
+  assert.equal(out.button.step, "gate");
+  assert.equal(out.button.verdict, "BLOCK");
+  assert.equal(out.button.action, "Do not pay");
+  assert.match(out.button.reason, /FactGate answered BLOCK/);
+  assert.deepEqual(out.router.chats(), []);
+  assert.deepEqual(out.cards.map((c) => c.peerOrigin), ["localhost:8790"]);
+  assert.deepEqual(E2E.events(out.trace, "remote_fetch", "start").map((e) => e.peerOrigin), ["localhost:8790"]);
+  assert.deepEqual(out.web.requests.filter((r) => r.origin === ORIGINS.glossy && !r.from.endsWith(ORIGINS.factgate)), []);
+  const stop = out.log.find((l) => l.kind === "stop" && l.stop === "gate");
+  assert.match(stop.text, /Glossy Stay is not loaded/);
+  assert.deepEqual(out.web.windows.map((w) => new URL(w.src).origin), [ORIGINS.factgate]);
 });

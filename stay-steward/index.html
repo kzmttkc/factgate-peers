@@ -30,7 +30,11 @@
           <select id="trip-stay"></select>
         </form>
         <p id="trip-out-status" role="status"></p>
-        <p class="note">These details are private context. They stay on this page: the assistant's partners receive only the chosen stay's address (<code>target_url</code>), and only FactGate needs it. The stay's own window asks for the guest name when it books.</p>
+        <p class="note">These details are private context. They stay on this page: the partners receive only the chosen stay's address (<code>target_url</code>). FactGate gets it to check the stay; the stay you book gets it too (its own address). The stay's own window asks for the guest name when it books.</p>
+        <div class="check-row">
+          <button id="check-factgate" type="button" disabled>Check with FactGate</button>
+          <p id="check-status" class="note" role="status">Loading the agent runtime…</p>
+        </div>
       </section>
       <section aria-labelledby="gate-heading">
         <h2 id="gate-heading">The gate before linking</h2>

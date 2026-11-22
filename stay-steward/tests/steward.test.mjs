@@ -8,8 +8,8 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { GateKeeper } from "../js/gate-keeper.mjs";
-import { FACTGATE, STAYS, TripPage } from "../js/trip.mjs";
+import { DEFAULT_POLICY, FactGateGate, policyAllows } from "../js/factgate-gate.mjs";
+import { FACTGATE, GATE_POLICY, STAYS, TripPage } from "../js/trip.mjs";
 
 const DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const SKILL = process.env.AGENTIFY_SKILL || path.join(os.homedir(), "factgate-ref/agentic-web/skills/agentify-website");
@@ -52,7 +52,7 @@ test("only target_url may pass to a partner as private context", async () => {
 
 test("the gate: FactGate and this page go to the card; a stay goes only after FactGate, and never after BLOCK", () => {
   const log = [];
-  const gate = new GateKeeper({ factgateUrl: FACTGATE.url, pageOrigin: "http://[::1]:8793", labels: { "127.0.0.1:8792": "Verified Stay", "127.0.0.1:8791": "Glossy Stay" }, record: (e) => log.push(e) });
+  const gate = new FactGateGate({ factgateUrl: FACTGATE.url, pageOrigin: "http://[::1]:8793", labels: { "127.0.0.1:8792": "Verified Stay", "127.0.0.1:8791": "Glossy Stay" }, record: (e) => log.push(e) });
   const card = (host) => gate.decide({ kind: "network", peerOrigin: host, peerLabel: host });
   assert.equal(card("localhost:8790").action, "ask");
   assert.equal(card("[::1]:8793").action, "ask");
@@ -73,7 +73,7 @@ test("the gate: FactGate and this page go to the card; a stay goes only after Fa
 });
 
 test("the gate turns runtime stops into lines the page shows", () => {
-  const gate = new GateKeeper({ factgateUrl: FACTGATE.url, pageOrigin: "http://[::1]:8793" });
+  const gate = new FactGateGate({ factgateUrl: FACTGATE.url, pageOrigin: "http://[::1]:8793" });
   assert.equal(gate.stopFrom({ kind: "composition_limit", phase: "note", reason: "that network was already consulted for this query" }).stop, "budget");
   assert.equal(gate.stopFrom({ kind: "tool", phase: "end", resultPreview: "Error from tool 'rogue': Policy: 127.0.0.1:8799 is not in stay_steward's allowed_peers; refusing to contact it." }).stop, "denied_origin");
   assert.equal(gate.stopFrom({ kind: "tool", phase: "end", resultPreview: "Error from tool 'verified_stay': Network 'verified_stay' (127.0.0.1:8792) failed validation: x" }).stop, "invalid_network");
@@ -89,4 +89,31 @@ test("the build passes --check; its only warnings are the expected ones for name
   const warnings = `${stdout}\n${stderr}`.split("\n").filter((l) => l.startsWith("WARNING"));
   assert.equal(warnings.length, 5, warnings.join("\n"));
   assert.ok(warnings.every((w) => /link_slots|linking\.imports|allowed_peers lists http/.test(w)), warnings.join("\n"));
+});
+
+test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async () => {
+  const site = process.env.FACTGATE_SITE || path.join(os.homedir(), "factgate", "site");
+  const ours = await readFile(path.join(DIR, "js/factgate-gate.mjs"), "utf8");
+  const theirs = await readFile(path.join(site, "factgate-gate.mjs"), "utf8");
+  assert.equal(ours, theirs, "stay-steward/js/factgate-gate.mjs differs from FactGate's site/factgate-gate.mjs");
+});
+
+test("the gate policy: ALLOW passes, BLOCK never, CAUTION only for the kinds a site accepts; the default accepts none", () => {
+  assert.deepEqual(DEFAULT_POLICY.passCaution, []);
+  assert.equal(policyAllows(DEFAULT_POLICY, { verdict: "ALLOW" }).pass, true);
+  assert.equal(policyAllows(DEFAULT_POLICY, { verdict: "CAUTION", cautions: ["identity_unknown"] }).pass, false);
+  assert.equal(policyAllows(GATE_POLICY, { verdict: "CAUTION", cautions: ["identity_unknown"] }).pass, true);
+  assert.equal(policyAllows(GATE_POLICY, { verdict: "CAUTION", cautions: ["identity_unknown", "unreachable"] }).pass, false);
+  assert.equal(policyAllows(GATE_POLICY, { verdict: "CAUTION", cautions: ["steering"] }).pass, false);
+  // BLOCK cannot be let through, whatever the list says; unknown kinds are dropped from a policy.
+  assert.equal(policyAllows({ passCaution: ["BLOCK", "identity_unknown"] }, { verdict: "BLOCK" }).pass, false);
+  assert.equal(policyAllows({ passCaution: ["anything"] }, { verdict: "CAUTION", cautions: ["anything"] }).pass, false);
+  // A CAUTION with no kinds named (an older FactGate) is "unknown", which no policy lists.
+  assert.equal(policyAllows(GATE_POLICY, { verdict: "CAUTION", reasons: [{ effect: "CAUTION" }] }).pass, false);
+  const gate = new FactGateGate({ factgateUrl: FACTGATE.url, pageOrigin: "http://[::1]:8793", policy: GATE_POLICY });
+  const receipt = (url, verdict, cautions) => ({ action: "http://localhost:8790/factgate#gate_check", status: "succeeded", result: { url, verdict, cautions, reasons: [] } });
+  gate.observe([receipt("http://a.example/a", "CAUTION", ["identity_unknown"]), receipt("http://b.example/b", "CAUTION", ["unreachable", "identity_unknown"])]);
+  assert.equal(gate.decide({ kind: "network", peerOrigin: "a.example" }).action, "ask");
+  assert.equal(gate.decide({ kind: "network", peerOrigin: "b.example" }).action, "decline");
+  assert.match(gate.decide({ kind: "network", peerOrigin: "b.example" }).reason, /CAUTION for b\.example \(b\.example\) \(unreachable\), which this site's policy does not accept/);
 });

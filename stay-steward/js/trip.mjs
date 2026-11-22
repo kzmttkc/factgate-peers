@@ -18,6 +18,14 @@ export const STAYS = Object.freeze([
  */
 export const FACTGATE = Object.freeze({ link: "factgate", label: "FactGate", url: "http://localhost:8790/factgate" });
 
+/**
+ * Stay Steward's gate policy (js/factgate-gate.mjs). ALLOW passes, BLOCK never does. A CAUTION
+ * passes only when FactGate could not measure who the stay is (no ERC-8004 registration) and
+ * everything else was fine; a stay that did not answer, steers the caller or has no delivery
+ * record is stopped. The gate's own default passes no CAUTION at all.
+ */
+export const GATE_POLICY = Object.freeze({ passCaution: Object.freeze(["identity_unknown"]) });
+
 const DAY = 24 * 60 * 60 * 1000;
 
 /**

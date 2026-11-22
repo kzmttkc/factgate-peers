@@ -1,8 +1,9 @@
 // Mounts the assistant inside Stay Steward's page, with the gate before linking. Load it with:
 //   <script type="module" src="site.js"></script>
 // The page needs the mount markup from assistant-section.html.
-import { GateKeeper } from "./js/gate-keeper.mjs";
-import { FACTGATE, STAYS, Trip } from "./js/trip.mjs";
+import { checkAndBook } from "./js/check-button.mjs";
+import { FactGateGate } from "./js/factgate-gate.mjs";
+import { FACTGATE, GATE_POLICY, STAYS, Trip } from "./js/trip.mjs";
 
 /**
  * Boots the browser runtime in the page's assistant section.
@@ -45,6 +46,7 @@ export class AssistantMount {
       AssistantMount.defaultConsent = booted.engine.onConsent;
       booted.engine.onConsent = AssistantMount.consent;
       AssistantMount.installGate(booted.engine);
+      AssistantMount.wireCheckButton(booted.engine);
       // Without a key the chat cannot answer yet. This is the same test as the
       // runtime's "API key required" badge in runtime/ui.js.
       const needsKey = !booted.engine.mockLLM
@@ -59,6 +61,10 @@ export class AssistantMount {
     } catch (error) {
       // The page must keep working without the assistant.
       status.textContent = "The assistant could not load. You can still use the page directly.";
+      const out = document.querySelector("#check-status");
+      if (out) {
+        out.textContent = "The agent runtime could not load, so the check cannot run here.";
+      }
       console.error("Assistant startup failed", error);
       return null;
     }
@@ -77,9 +83,47 @@ export class AssistantMount {
       labels[new URL(stay.url).host] = stay.label;
     }
     labels[location.host] = "Stay Steward";
-    AssistantMount.gate = new GateKeeper({ factgateUrl: FACTGATE.url, pageOrigin: location.origin, labels, record: (entry) => Trip.page.record(entry) }).install(engine);
+    AssistantMount.gate = new FactGateGate({ factgateUrl: FACTGATE.url, pageOrigin: location.origin, labels, policy: GATE_POLICY, record: (entry) => Trip.page.record(entry) }).install(engine);
     const streamTurn = engine.streamTurn.bind(engine);
     engine.streamTurn = (text, options = {}) => streamTurn(text, { ...options, slyData: { ...(options.slyData || {}), ...Trip.page.privateContext() } });
+  }
+
+  /**
+   * The "Check with FactGate" button: page code runs the same gate with no model and no key
+   * (js/check-button.mjs). The cards and FactGate's window prompt appear in the chat panel.
+   *
+   * :param engine: The runtime engine.
+   */
+  static wireCheckButton(engine) {
+    const button = document.querySelector("#check-factgate");
+    const out = document.querySelector("#check-status");
+    if (!button || !out) {
+      return;
+    }
+    button.disabled = false;
+    out.textContent = "No AI key needed. The cards appear in the assistant panel below.";
+    button.addEventListener("click", async () => {
+      const stay = Trip.page.stay();
+      const nights = Trip.page.nights();
+      button.disabled = true;
+      out.textContent = `Checking ${stay.label} with FactGate… Answer the cards in the assistant panel.`;
+      document.querySelector("#agent-app")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      try {
+        const r = await checkAndBook({ engine, gate: AssistantMount.gate, stay, nights, record: (entry) => Trip.page.record(entry) });
+        if (r.ok) {
+          out.textContent = `FactGate: ${r.verdict}. Booked at ${stay.label} in its own window (${r.booking.reference || "done"}).`;
+        } else if (r.step === "gate") {
+          out.textContent = `FactGate: ${r.action || r.verdict}. ${stay.label} was not loaded. ${r.reason}`;
+        } else {
+          out.textContent = `Stopped: ${r.reason}`;
+        }
+      } catch (error) {
+        out.textContent = `Stopped: ${String(error && error.message ? error.message : error)}`;
+      } finally {
+        button.disabled = false;
+        document.querySelector("#gate-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
   }
 
   /**

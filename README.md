@@ -128,12 +128,20 @@ stay as private context; its network allows only `target_url` to pass to a partn
   warnings, checked by `stay-steward/tests/steward.test.mjs`): the skill prefers URLs in
   `tools`, and the runtime adds a linked origin to the page's allowed peers when it resolves the
   name, so `allowed_peers` is not what stops these three. The gate below is.
-- **The gate before linking** (`js/gate-keeper.mjs`, page code): it reads FactGate's verdict from
-  the runtime's action receipt for FactGate's `gate_check`, and before any partner card it
-  declines a stay FactGate blocked or did not check in this visit. FactGate and the page's own
-  origin go to the card as usual. Every stop is a line in the page's gate log: over budget,
-  origin not allowed, invalid network, cycle, a declined card, and the private context each
-  partner got.
+- **The gate before linking** (`js/factgate-gate.mjs`, page code): a byte-identical copy of FactGate's
+  shared `site/factgate-gate.mjs` (a test checks they match). It reads FactGate's verdict from the
+  runtime's action receipt for FactGate's `gate_check`, and before any partner card it declines a
+  stay that FactGate did not check in this visit or whose verdict does not pass Stay Steward's
+  policy (`js/trip.mjs` `GATE_POLICY`: ALLOW, or a CAUTION only of kind `identity_unknown`; never
+  BLOCK). FactGate and the page's own origin go to the card as usual. Every stop is a line in the
+  page's gate log: the gate, over budget, origin not allowed, invalid network, cycle, a declined
+  card, and the private context each partner got.
+- **Check with FactGate, no key.** The button under "Your trip" (`js/check-button.mjs`) runs the
+  same gate from page code, with no model: the card for FactGate, FactGate's network loaded by
+  name, `gate_check` in FactGate's window (where FactGate's own card lists each origin it reads),
+  then, if the gate passes, Verified Stay's card, its network loaded by name and its booking window;
+  if not (Glossy Stay: BLOCK), a stop with the reasons. Partners receive only `target_url`:
+  FactGate, to check the stay, and the stay itself (its own URL).
 - **Booking.** Verified Stay's bridge (`verified-stay/bridge/`) shares `get_stay_state` and
   `book_stay` with Stay Steward's origin only. `book_stay` opens Verified Stay's window, where the
   visitor checks the room, nights and total and types the guest name; the chat gets the booking
@@ -142,7 +150,7 @@ stay as private context; its network allows only `target_url` to pass to a partn
 ## Tests
 
 ```shell
-node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 50 tests on 2026-11-22, all pass
+node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 55 tests on 2026-11-22, all pass
 FACTGATE_E2E_LIVE=1 node --test tests/three_sites.e2e.test.mjs   # the same, reading the real Base Sepolia RPC
 ```
 
@@ -159,6 +167,13 @@ leaves the process. It needs `~/factgate/site` (or `FACTGATE_SITE`).
 | 6-4 ALLOW: Stay Steward asks FactGate, then loads Verified Stay by name… | 4, and 5 and 6 in every run (`checkKeyStaysHome`, `checkPrivateContext`) |
 | BLOCK: FactGate blocks Glossy Stay, and the gate never loads Glossy Stay's network… | the gate |
 | 6-7 over budget / denied origin (policy) / denied origin (visitor) / invalid network / cycle | 7 |
+| gate policy: Stay Steward's policy stops a stay FactGate could not reach (CAUTION: unreachable) | the gate's policy |
+| button, no key: Verified Stay → ALLOW → card → network by name → booking window | 4, with no model call |
+| button, no key: Glossy Stay → BLOCK → stop with reasons, never loaded | the gate, with no model call |
+
+The "denied origin (policy)" test runs with a looser gate policy that accepts the rogue stay's
+CAUTION kinds, so the runtime's own `allowed_peers` check is what stops it; the next test shows
+Stay Steward's real policy stopping the same stay at the gate.
 
 The policy, invalid-network and cycle tests serve a changed copy of one file to the runtime
 only (as the reference linking tests L7 and L9 do): a steward network that names an origin

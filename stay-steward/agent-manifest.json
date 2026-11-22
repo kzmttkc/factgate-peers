@@ -32,7 +32,7 @@
   "peer_policy": {
     "mode": "closed",
     "deny_origins": [],
-    "note": "Stay Steward loads three partner networks by name (links.json): FactGate, Verified Stay and Glossy Stay, each after the visitor agrees on a card. It loads a stay only after FactGate checked it in this visit and did not answer BLOCK (js/gate-keeper.mjs). Partners get only the target_url private-context field."
+    "note": "Stay Steward loads three partner networks by name (links.json): FactGate, Verified Stay and Glossy Stay, each after the visitor agrees on a card. It loads a stay only after FactGate checked it in this visit and the verdict passes its gate policy: ALLOW, or a CAUTION only for an unmeasured identity; never BLOCK (js/factgate-gate.mjs). Partners get only the target_url private-context field."
   },
   "agent_mcp": {
     "protocol": "nsdeploy-agent-mcp/v1",

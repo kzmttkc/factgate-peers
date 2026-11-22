@@ -34,7 +34,7 @@ function mount() {
   const out = document.getElementById("trip-out-status");
   const show = () => {
     const t = page.getTrip();
-    out.textContent = `${t.stay}, ${t.nights} night(s). FactGate may receive only: target_url = ${t.stayUrl}`;
+    out.textContent = `${t.stay}, ${t.nights} night(s). Partners receive only target_url = ${t.stayUrl} (FactGate, to check it, and ${t.stay} itself).`;
   };
   document.getElementById("trip-form").addEventListener("input", () => {
     const r = page.update({
