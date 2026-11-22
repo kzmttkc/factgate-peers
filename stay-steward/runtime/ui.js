@@ -332,6 +332,7 @@ export function mountApp(root, { engine, trace, manifest, connect = null }) {
   const net = engine.top?.network;
   const title = manifest?.networks?.[0]?.description || net?.name || "Agent network";
   const needsByok = !engine.mockLLM && (!engine.byokKey || engine.byokKey === "demo");
+  const settingsStartClosed = root.dataset.settingsDefaultClosed === "true";
   // The Connect button needs an https page (or this computer's own address) in its own tab.
   const canConnect = OpenRouterConnect.isAvailable();
   const setupMessage = canConnect
@@ -393,7 +394,7 @@ export function mountApp(root, { engine, trace, manifest, connect = null }) {
       </div>
     </div>`;
   const settingsHtml = `
-    <details class="ns-settings"${needsByok ? " open" : ""}>
+    <details class="ns-settings"${needsByok && !settingsStartClosed ? " open" : ""}>
       <summary>⚙ ${AI_MODEL_SETTINGS_LABEL}</summary>
       ${settingsBodyHtml}
     </details>`;
@@ -463,7 +464,7 @@ export function mountApp(root, { engine, trace, manifest, connect = null }) {
       const disclosure = settingsSlot.closest("details");
       if (disclosure && root.contains(disclosure)) {
         disclosure.classList.add("ns-settings");
-        if (needsByok) disclosure.open = true;
+        if (needsByok && !settingsStartClosed) disclosure.open = true;
         settingsSlot.innerHTML = settingsBodyHtml;
       } else {
         settingsSlot.innerHTML = settingsHtml;

@@ -48,13 +48,16 @@
         <p>The assistant checks the stay with FactGate, then asks the stay's own assistant to book it. Each site it contacts asks you first.</p>
         <p class="assistant-note">Your messages and this page's data go to the LLM provider you choose in the settings below.</p>
         <p id="assistant-status" role="status">Connecting the assistant… If this message stays, the assistant could not load. You can still use the page directly.</p>
-        <div id="agent-app">
+        <div id="agent-app" data-settings-default-closed="true">
           <div data-ns-slot="header"></div>
           <div class="assistant-panels">
             <div data-ns-slot="chat"></div>
             <div data-ns-slot="agents"></div>
           </div>
-          <div data-ns-slot="settings"></div>
+          <details class="ns-settings">
+            <summary>⚙ AI model settings</summary>
+            <div data-ns-slot="settings"></div>
+          </details>
         </div>
       </section>
     </main>
