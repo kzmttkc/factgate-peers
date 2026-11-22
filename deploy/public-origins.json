@@ -1,0 +1,9 @@
+{
+  "note": "Local origin -> public origin. deploy/build-public.mjs rewrites the local URLs to these when it writes dist/. The source folders keep the local URLs, so the local servers and tests run unchanged. The same table is in ~/factgate/deploy/public-origins.json; keep the two equal.",
+  "sites": {
+    "factgate": { "local": "http://localhost:8790", "public": "https://factgate.vercel.app" },
+    "glossy-stay": { "local": "http://127.0.0.1:8791", "public": "https://glossy-stay-demo.vercel.app" },
+    "verified-stay": { "local": "http://127.0.0.1:8792", "public": "https://verified-stay-demo.vercel.app" },
+    "stay-steward": { "local": "http://[::1]:8793", "public": "https://stay-steward-demo.vercel.app" }
+  }
+}

@@ -21,6 +21,19 @@ sellers on Base Sepolia."
 
 Expected FactGate verdicts: **Glossy Stay = BLOCK**, **Verified Stay = ALLOW**.
 
+## Deployed
+
+| Site | URL |
+| --- | --- |
+| Stay Steward | https://stay-steward-demo.vercel.app/ (network `https://stay-steward-demo.vercel.app/stay_steward`) |
+| Verified Stay | https://verified-stay-demo.vercel.app/ (network `https://verified-stay-demo.vercel.app/verified_stay`) |
+| Glossy Stay | https://glossy-stay-demo.vercel.app/ (network `https://glossy-stay-demo.vercel.app/glossy_stay`) |
+| FactGate | https://factgate.vercel.app/ (source: https://github.com/kzmttkc/factgate) |
+
+On Stay Steward, press **Check with FactGate** (no AI key needed). Verified Stay ends with a booking in its own window. Glossy Stay stops at FactGate's BLOCK.
+
+`node deploy/build-public.mjs` writes `dist/<project>/` for each site, with the local URLs rewritten to the public ones in `deploy/public-origins.json` and a `vercel.json` that adds `Access-Control-Allow-Origin: *` on the manifest, network file, links.json, agent-mcp.json, `bridge/`, `.well-known/`, `pay/` and `api/`, and the worker's Content-Security-Policy. Deploy with `vercel deploy --prod dist/<project>`. The source folders keep the local URLs, so the local run and the tests below are unchanged.
+
 ## Run
 
 From this folder, one terminal per site (FactGate itself: `~/factgate/README.md`, on
