@@ -167,12 +167,10 @@ A booking agent (`stay-steward/`). Its page keeps the trip (dates, guest name) a
 stay as private context; its network allows only `target_url` to pass to a partner
 (`stay_steward.hocon`, `allow.to_downstream.sly_data`).
 
-- **Named partners.** `links.json` binds `factgate`, `verified_stay` and `glossy_stay` to their
-  network URLs; the network lists them as `link_slots`, the manifest as `linking.imports`, and
-  their origins are in `allowed_peers`. The build warns about link slots and imports (5
-  warnings, checked by `stay-steward/tests/steward.test.mjs`): the skill prefers URLs in
-  `tools`, and the runtime adds a linked origin to the page's allowed peers when it resolves the
-  name, so `allowed_peers` is not what stops these three. The gate below is.
+- **Partner tools.** FactGate, Verified Stay and Glossy Stay are the full published network URLs
+  in `stay_steward.hocon` (`tools` and `link_labels`), with their origins in `allowed_peers` and
+  empty `linking.imports` (agentify-website SKILL). Glossy's origin is not allowed page-wide; the
+  page gate blocks loading Glossy until FactGate passes in this visit (`js/factgate-gate.mjs`).
 - **The gate before linking** (`js/factgate-gate.mjs`, page code): a byte-identical copy of FactGate's
   shared `site/factgate-gate.mjs` (a test checks they match). It reads FactGate's verdict from the
   runtime's action receipt for FactGate's `gate_check`, and before any partner card it declines a
@@ -195,7 +193,7 @@ stay as private context; its network allows only `target_url` to pass to a partn
 ## Tests
 
 ```shell
-node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 55 tests on 2026-11-22, all pass
+node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 55 tests, all pass (re-run after changes)
 FACTGATE_E2E_LIVE=1 node --test tests/three_sites.e2e.test.mjs   # the same, reading the real Base Sepolia RPC
 ```
 

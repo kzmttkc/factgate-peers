@@ -32,7 +32,7 @@
   "peer_policy": {
     "mode": "closed",
     "deny_origins": [],
-    "note": "Stay Steward loads three partner networks by name (links.json): FactGate, Verified Stay and Glossy Stay, each after the visitor agrees on a card. It loads a stay only after FactGate checked it in this visit and the verdict passes its gate policy: ALLOW, or a CAUTION only for an unmeasured identity; never BLOCK (js/factgate-gate.mjs). Partners get only the target_url private-context field."
+    "note": "Stay Steward calls three partner networks by full URL after the visitor agrees on a card: FactGate, Verified Stay and Glossy Stay. It loads a stay only after FactGate checked it in this visit and the verdict passes its gate policy: ALLOW, or a CAUTION only for an unmeasured identity; never BLOCK (js/factgate-gate.mjs). Partners get only the target_url private-context field."
   },
   "agent_mcp": {
     "protocol": "nsdeploy-agent-mcp/v1",
@@ -57,29 +57,7 @@
         "url": "stay_steward"
       }
     ],
-    "imports": [
-      {
-        "network": "stay_steward",
-        "reference": "factgate",
-        "callers": ["stay_steward_desk"],
-        "status": "bound",
-        "url": "http://localhost:8790/factgate"
-      },
-      {
-        "network": "stay_steward",
-        "reference": "verified_stay",
-        "callers": ["stay_steward_desk"],
-        "status": "bound",
-        "url": "http://127.0.0.1:8792/verified_stay"
-      },
-      {
-        "network": "stay_steward",
-        "reference": "glossy_stay",
-        "callers": ["stay_steward_desk"],
-        "status": "bound",
-        "url": "http://127.0.0.1:8791/glossy_stay"
-      }
-    ],
+    "imports": [],
     "link_updates": {
       "mode": "browser-local"
     }

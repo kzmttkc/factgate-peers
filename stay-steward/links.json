@@ -1,10 +1,6 @@
 {
   "version": 1,
   "networks": {
-    "stay_steward": {
-      "factgate": "http://localhost:8790/factgate",
-      "verified_stay": "http://127.0.0.1:8792/verified_stay",
-      "glossy_stay": "http://127.0.0.1:8791/glossy_stay"
-    }
+    "stay_steward": {}
   }
 }

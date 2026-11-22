@@ -16,21 +16,21 @@ const DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const SKILL = resolveAgentifySkill();
 const json = async (f) => JSON.parse(await readFile(path.join(DIR, f), "utf8"));
 
-test("the three partners are named the same way in links.json, the network's link slots, the manifest's imports and allowed_peers", async () => {
-  const links = (await json("links.json")).networks.stay_steward;
+test("partners are full network URLs in tools and link_labels, not link slots", async () => {
   const network = await json("stay_steward.network.json");
+  const partners = [FACTGATE.url, ...STAYS.map((s) => s.url)];
+  assert.deepEqual(network.link_slots || {}, {});
+  assert.deepEqual([...network.tools[0].tools].sort(), [...partners].sort());
+  for (const url of partners) {
+    assert.ok(typeof network.link_labels[url] === "string" && network.link_labels[url].length > 0, url);
+  }
+  const links = (await json("links.json")).networks.stay_steward;
+  assert.deepEqual(links, {});
   const manifest = await json("agent-manifest.json");
-  const names = ["factgate", "verified_stay", "glossy_stay"];
-  assert.deepEqual(Object.keys(links).sort(), [...names].sort());
-  assert.deepEqual(Object.keys(network.link_slots).sort(), [...names].sort());
-  assert.deepEqual(network.tools[0].tools, names);
-  assert.deepEqual(manifest.linking.imports.map((i) => [i.reference, i.url]), names.map((n) => [n, links[n]]));
-  assert.deepEqual([...manifest.allowed_peers].sort(), [...new Set(names.map((n) => new URL(links[n]).origin))].sort());
+  assert.deepEqual(manifest.linking.imports || [], []);
+  assert.deepEqual([...manifest.allowed_peers].sort(), [...new Set(partners.map((u) => new URL(u).origin))].sort());
   assert.equal(manifest.peer_policy.mode, "closed");
-  // Each URL ends with the exact published network name (spec 3.2).
-  assert.equal(links.factgate, FACTGATE.url);
   for (const stay of STAYS) {
-    assert.equal(links[stay.link], stay.url);
     assert.equal(new URL(stay.url).pathname.split("/").pop(), stay.link);
   }
 });
@@ -84,13 +84,12 @@ test("the gate turns runtime stops into lines the page shows", () => {
   assert.equal(gate.stopFrom({ kind: "tool", phase: "end", resultPreview: "{\"ok\":true}" }), null);
 });
 
-test("the build passes --check; its only warnings are the expected ones for named links", async (t) => {
+test("the build passes --check with no link-slot or page-wide partner warnings", async (t) => {
   if (!existsSync(path.join(SKILL, "scripts/build_network.mjs"))) return t.skip(`set AGENTIFY_SKILL to the agentic-web skills/agentify-website folder (not found at ${SKILL})`);
   const run = promisify(execFile);
   const { stdout, stderr } = await run(process.execPath, [path.join(SKILL, "scripts/build_network.mjs"), path.join(DIR, "stay_steward.hocon"), "--manifest", path.join(DIR, "agent-manifest.json"), "--check"]);
   const warnings = `${stdout}\n${stderr}`.split("\n").filter((l) => l.startsWith("WARNING"));
-  assert.equal(warnings.length, 5, warnings.join("\n"));
-  assert.ok(warnings.every((w) => /link_slots|linking\.imports|allowed_peers lists http/.test(w)), warnings.join("\n"));
+  assert.ok(!warnings.some((w) => /link_slots|linking\.imports|whole page|link slot/i.test(w)), warnings.join("\n"));
 });
 
 test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async (t) => {

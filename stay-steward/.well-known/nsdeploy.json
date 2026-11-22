@@ -11,35 +11,7 @@
       "url": "stay_steward"
     }
   ],
-  "imports": [
-    {
-      "network": "stay_steward",
-      "reference": "factgate",
-      "callers": [
-        "stay_steward_desk"
-      ],
-      "status": "bound",
-      "url": "http://localhost:8790/factgate"
-    },
-    {
-      "network": "stay_steward",
-      "reference": "verified_stay",
-      "callers": [
-        "stay_steward_desk"
-      ],
-      "status": "bound",
-      "url": "http://127.0.0.1:8792/verified_stay"
-    },
-    {
-      "network": "stay_steward",
-      "reference": "glossy_stay",
-      "callers": [
-        "stay_steward_desk"
-      ],
-      "status": "bound",
-      "url": "http://127.0.0.1:8791/glossy_stay"
-    }
-  ],
+  "imports": [],
   "link_updates": {
     "mode": "browser-local"
   }

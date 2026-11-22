@@ -5,9 +5,8 @@
 # Build and check from ~/factgate-peers:
 #   node ~/factgate-ref/agentic-web/skills/agentify-website/scripts/build_network.mjs stay-steward/stay_steward.hocon --manifest stay-steward/agent-manifest.json
 #
-# Partner networks are named, not addressed: "factgate", "verified_stay" and "glossy_stay" are
-# link slots, and links.json binds each name to its network URL (MVP spec 3.3). The build warns
-# about link slots; that is expected here (README "Why named links").
+# Partner networks are the full published network URLs in tools (agentify-website SKILL); the gate on
+# this page still blocks a stay before its network is loaded unless FactGate passed in this visit.
 {
     "metadata": {
         "description": "Book a stay through its own agent, after FactGate checks it.",
@@ -29,16 +28,10 @@
         "version": 1
     },
 
-    "link_slots": {
-        "factgate": {
-            "callers": ["stay_steward_desk"]
-        },
-        "verified_stay": {
-            "callers": ["stay_steward_desk"]
-        },
-        "glossy_stay": {
-            "callers": ["stay_steward_desk"]
-        }
+    "link_labels": {
+        "http://localhost:8790/factgate": "FactGate",
+        "http://127.0.0.1:8792/verified_stay": "Verified Stay",
+        "http://127.0.0.1:8791/glossy_stay": "Glossy Stay"
     },
 
     "commondefs": {
@@ -113,7 +106,11 @@ How to work:
                     "sly_data": ["target_url"]
                 }
             },
-            "tools": ["factgate", "verified_stay", "glossy_stay"]
+            "tools": [
+                "http://localhost:8790/factgate",
+                "http://127.0.0.1:8792/verified_stay",
+                "http://127.0.0.1:8791/glossy_stay"
+            ]
         }
     ]
 }

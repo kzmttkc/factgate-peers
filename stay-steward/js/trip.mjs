@@ -6,7 +6,7 @@
 // dates and the name never leave this page.
 
 /**
- * The stays the steward can book, by the name its network uses for each (links.json).
+ * The stays the steward can book (full network URLs in stay_steward.hocon).
  */
 export const STAYS = Object.freeze([
   Object.freeze({ link: "verified_stay", label: "Verified Stay", url: "http://127.0.0.1:8792/verified_stay" }),

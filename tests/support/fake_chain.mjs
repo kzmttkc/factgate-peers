@@ -96,7 +96,7 @@ export async function fakeOutside(factgateSite) {
     if (url.origin === "https://api.nandaindex.org" && url.pathname === "/api/v1/index") {
       return new Response("[]", { status: 200, headers: { "content-type": "application/json" } });
     }
-    if (url.origin === "https://sepolia.base.org" && String(init.method || "GET").toUpperCase() === "POST") {
+    if ((url.origin === "https://sepolia.base.org" || url.origin === "https://base-sepolia-rpc.publicnode.com") && String(init.method || "GET").toUpperCase() === "POST") {
       const body = JSON.parse(init.body);
       const out = Array.isArray(body) ? body.map((b) => ({ jsonrpc: "2.0", id: b.id, ...answer(b) })) : { jsonrpc: "2.0", id: body.id ?? 1, ...answer(body) };
       return new Response(JSON.stringify(out), { status: 200, headers: { "content-type": "application/json" } });

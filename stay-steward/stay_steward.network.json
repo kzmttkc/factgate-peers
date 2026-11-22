@@ -15,22 +15,10 @@
   "cruse": {
     "version": 1
   },
-  "link_slots": {
-    "factgate": {
-      "callers": [
-        "stay_steward_desk"
-      ]
-    },
-    "verified_stay": {
-      "callers": [
-        "stay_steward_desk"
-      ]
-    },
-    "glossy_stay": {
-      "callers": [
-        "stay_steward_desk"
-      ]
-    }
+  "link_labels": {
+    "http://localhost:8790/factgate": "FactGate",
+    "http://127.0.0.1:8792/verified_stay": "Verified Stay",
+    "http://127.0.0.1:8791/glossy_stay": "Glossy Stay"
   },
   "commondefs": {
     "replacement_strings": {
@@ -67,9 +55,9 @@
         }
       },
       "tools": [
-        "factgate",
-        "verified_stay",
-        "glossy_stay"
+        "http://localhost:8790/factgate",
+        "http://127.0.0.1:8792/verified_stay",
+        "http://127.0.0.1:8791/glossy_stay"
       ]
     }
   ]
