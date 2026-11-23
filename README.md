@@ -23,7 +23,7 @@ cd factgate-peers
 node --test "*/tests/*.test.mjs" "tests/*.test.mjs"
 ```
 
-Expected: **55 tests, 55 pass, 0 fail, 0 skipped** (includes ten three-site end-to-end tests in `tests/three_sites.e2e.test.mjs`).
+Expected: **56 tests, 56 pass, 0 fail, 0 skipped** (includes ten three-site end-to-end tests in `tests/three_sites.e2e.test.mjs`).
 
 From `factgate`:
 
@@ -193,7 +193,7 @@ stay as private context; its network allows only `target_url` to pass to a partn
 ## Tests
 
 ```shell
-node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 55 tests, all pass (re-run after changes)
+node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 56 tests, all pass (re-run after changes)
 FACTGATE_E2E_LIVE=1 node --test tests/three_sites.e2e.test.mjs   # the same, reading the real Base Sepolia RPC
 ```
 
