@@ -56,6 +56,29 @@ function mount() {
   }
 }
 
+function mountSpec67() {
+  const button = document.getElementById("spec67-self-test");
+  const status = document.getElementById("spec67-status");
+  const list = document.getElementById("spec67-log");
+  if (!button || !list) {
+    return;
+  }
+  button.addEventListener("click", async () => {
+    const { runSpec67SelfTest } = await import("./spec67-self-test.mjs");
+    list.replaceChildren();
+    const lines = [];
+    const r = runSpec67SelfTest((entry) => {
+      lines.push(entry.text);
+      const item = document.createElement("li");
+      item.className = `log-${entry.kind}${entry.stop ? ` log-stop-${entry.stop}` : ""}`;
+      item.textContent = entry.text;
+      list.append(item);
+    });
+    status.textContent = r.ok ? `Done: ${lines.length} stop lines (same shape as the gate log above).` : `Failed: ${r.reason}`;
+  });
+}
+
 if (typeof document !== "undefined") {
   mount();
+  mountSpec67();
 }

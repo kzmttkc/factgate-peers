@@ -100,6 +100,18 @@ test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async (t)
   assert.equal(ours, theirs, "stay-steward/js/factgate-gate.mjs differs from FactGate's site/factgate-gate.mjs");
 });
 
+test("spec 6-7 self-test runs five local fixtures with gate-log stop lines", async () => {
+  const { runSpec67SelfTest } = await import("../js/spec67-self-test.mjs");
+  const r = runSpec67SelfTest();
+  assert.equal(r.ok, true, r.reason);
+  assert.equal(r.lines.length, 5);
+  assert.ok(r.lines.some((t) => /invalid network/i.test(t)));
+  assert.ok(r.lines.some((t) => /cycle/i.test(t)));
+  assert.ok(r.lines.some((t) => /over budget|already consulted/i.test(t)));
+  assert.ok(r.lines.some((t) => /origin not allowed|allowed_peers/i.test(t)));
+  assert.ok(r.lines.some((t) => /declined on its card/i.test(t)));
+});
+
 test("the gate policy: ALLOW passes, BLOCK never, CAUTION only for the kinds a site accepts; the default accepts none", () => {
   assert.deepEqual(DEFAULT_POLICY.passCaution, []);
   assert.equal(policyAllows(DEFAULT_POLICY, { verdict: "ALLOW" }).pass, true);

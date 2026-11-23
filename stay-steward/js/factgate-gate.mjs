@@ -26,6 +26,8 @@
 // links to a site that answers as declared but has no ERC-8004 registration, and still stops one
 // that did not answer (unreachable) or that FactGate blocked.
 
+export const VERSION = "1.0.0";
+
 export const DEFAULT_POLICY = Object.freeze({ passCaution: Object.freeze([]) });
 
 export const CAUTION_KINDS = Object.freeze(["identity_unknown", "unreachable", "steering", "no_delivery_record", "declined", "not_compared", "delivery_warn"]);
