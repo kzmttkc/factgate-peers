@@ -32,7 +32,7 @@ cd ../factgate
 node --test "test/*.test.mjs" "site/tests/*.test.mjs"
 ```
 
-Expected: **160 tests, 153 pass, 0 fail, 7 skipped** (skipped rows are template tests for irreversible actions; FactGate defines none).
+Expected: **183 tests, 176 pass, 0 fail, 7 skipped** (skipped rows are template tests for irreversible actions; FactGate defines none) — run `node --test "test/*.test.mjs" "site/tests/*.test.mjs"` in `../factgate`.
 
 Optional overrides: `FACTGATE_DIR` or `FACTGATE_SITE` for the FactGate `site/` folder; `AGENTIFY_SKILL` for `agentic-web/skills/agentify-website`. If `../factgate` is missing, only `tests/three_sites.e2e.test.mjs` fails, with clone instructions (spec 6-4..6-7).
 
@@ -197,7 +197,7 @@ node --test "*/tests/*.test.mjs" "tests/*.test.mjs"     # 55 tests, all pass (re
 FACTGATE_E2E_LIVE=1 node --test tests/three_sites.e2e.test.mjs   # the same, reading the real Base Sepolia RPC
 ```
 
-`tests/three_sites.e2e.test.mjs` runs the skill's runtime (unchanged, `stay-steward/runtime/`)
+`tests/three_sites.e2e.test.mjs` runs the skill's runtime (`stay-steward/runtime/`, with `settingsDefaultClosed` in `ui.js` so AI model settings start closed)
 with Stay Steward as the visitor's page, a scripted model behind a fake router
 (`tests/support/script_router.mjs`) and the fake key `sk-test-not-a-real-key`. The web is a
 stub (`tests/support/peer_web.mjs`, adapted from the reference linking tests): site folders
