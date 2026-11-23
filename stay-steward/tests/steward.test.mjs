@@ -100,7 +100,7 @@ test("the shared gate is FactGate's factgate-gate.mjs, byte for byte", async (t)
   assert.equal(ours, theirs, "stay-steward/js/factgate-gate.mjs differs from FactGate's site/factgate-gate.mjs");
 });
 
-test("spec 6-7 self-test runs five local fixtures with gate-log stop lines", async () => {
+test("spec 6-7 self-test replays five recorded stops through the gate log with public hostnames", async () => {
   const { runSpec67SelfTest } = await import("../js/spec67-self-test.mjs");
   const r = runSpec67SelfTest();
   assert.equal(r.ok, true, r.reason);
@@ -110,6 +110,9 @@ test("spec 6-7 self-test runs five local fixtures with gate-log stop lines", asy
   assert.ok(r.lines.some((t) => /over budget|already consulted/i.test(t)));
   assert.ok(r.lines.some((t) => /origin not allowed|allowed_peers/i.test(t)));
   assert.ok(r.lines.some((t) => /declined on its card/i.test(t)));
+  assert.ok(r.lines.some((t) => /verified-stay-demo\.vercel\.app/.test(t)));
+  assert.ok(r.lines.some((t) => /not-allowed\.example/.test(t)));
+  assert.ok(r.lines.every((t) => !/127\.0\.0\.1|\[::1\]|localhost/i.test(t)));
 });
 
 test("the gate policy: ALLOW passes, BLOCK never, CAUTION only for the kinds a site accepts; the default accepts none", () => {

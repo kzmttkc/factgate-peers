@@ -32,7 +32,7 @@ cd ../factgate
 node --test "test/*.test.mjs" "site/tests/*.test.mjs"
 ```
 
-Expected: **183 tests, 176 pass, 0 fail, 7 skipped** (skipped rows are template tests for irreversible actions; FactGate defines none) — run `node --test "test/*.test.mjs" "site/tests/*.test.mjs"` in `../factgate`.
+Expected: **186 tests, 179 pass, 0 fail, 7 skipped** (skipped rows are template tests for irreversible actions; FactGate defines none) — run `node --test "test/*.test.mjs" "site/tests/*.test.mjs"` in `../factgate`.
 
 Optional overrides: `FACTGATE_DIR` or `FACTGATE_SITE` for the FactGate `site/` folder; `AGENTIFY_SKILL` for `agentic-web/skills/agentify-website`. If `../factgate` is missing, only `tests/three_sites.e2e.test.mjs` fails, with clone instructions (spec 6-4..6-7).
 
@@ -210,7 +210,7 @@ leaves the process. It needs a FactGate checkout (`../factgate/site`, `FACTGATE_
 | --- | --- |
 | 6-4 ALLOW: Stay Steward asks FactGate, then loads Verified Stay by name… | 4, and 5 and 6 in every run (`checkKeyStaysHome`, `checkPrivateContext`) |
 | BLOCK: FactGate blocks Glossy Stay, and the gate never loads Glossy Stay's network… | the gate |
-| 6-7 over budget / denied origin (policy) / denied origin (visitor) / invalid network / cycle | 7; also on the live Stay Steward page: **Spec 6-7 self-test (no key)** (fixtures, no new origins) |
+| 6-7 over budget / denied origin (policy) / denied origin (visitor) / invalid network / cycle | 7; also on the live Stay Steward page: **Spec 6-7 self-test (no key)** replays the five recorded section-6 stop messages through the gate log so you can see each line. The runtime's own stops are proven by `tests/three_sites.e2e.test.mjs`. |
 | gate policy: Stay Steward's policy stops a stay FactGate could not reach (CAUTION: unreachable) | the gate's policy |
 | button, no key: Verified Stay → ALLOW → card → network by name → booking window | 4, with no model call |
 | button, no key: Glossy Stay → BLOCK → stop with reasons, never loaded | the gate, with no model call |
